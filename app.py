@@ -1,4 +1,5 @@
 from flask import Flask, request, Response
+from config import api_key
 import requests
 
 
@@ -84,7 +85,7 @@ def request_recipe(prompt: str):
     }
     headers = {
         "Content-type": "application/json",
-        "Authorization": "Bearer " + apiKey,
+        "Authorization": "Bearer " + api_key,
     }
 
     response = requests.post(baseUrl, json=data, headers=headers, timeout=30)
