@@ -1,4 +1,5 @@
 from flask import Flask, request, Response
+from config import api_key
 import requests
 
 
@@ -40,8 +41,6 @@ def recipe():
 
     return Response(result, mimetype="application/json")
 
-
-apiKey = "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"
 baseUrl = "https://api.openai.com/v1/completions"
 model = "text-davinci-003"
 temperature = 0.5
@@ -86,7 +85,7 @@ def request_recipe(prompt: str):
     }
     headers = {
         "Content-type": "application/json",
-        "Authorization": "Bearer " + apiKey,
+        "Authorization": "Bearer " + api_key,
     }
 
     response = requests.post(baseUrl, json=data, headers=headers, timeout=30)
