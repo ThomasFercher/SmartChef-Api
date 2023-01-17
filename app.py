@@ -43,7 +43,7 @@ def recipe():
 
 baseUrl = "https://api.openai.com/v1/completions"
 model = "text-davinci-003"
-temperature = 0.5
+temperature = 1
 max_tokens = 1000
 templatePrompt = """
 Create a Cooking recipe with the available Ingredients using the available Tools. Respect the Serving Amount.
