@@ -54,7 +54,7 @@ Use both Celcius and Fahrenheit
 Output in the following Format: 
 {"title": str,
 "servingAmount: int,
-"ingridients": [{"name": str, "amount": str, "kcal": int}], 
+"ingredients": [{"name": str, "amount": str, "kcal": int}], 
 "tools": [""], 
 "steps" : [{"number": int, "description": str}], 
 "optionalSteps" : [{"number": int, "description": str}],
