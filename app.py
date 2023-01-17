@@ -27,7 +27,7 @@ def recipe():
     return request_recipe(prompt)
 
 
-apiKey = "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"
+apiKey = "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"
 baseUrl = "https://api.openai.com/v1/completions"
 model = "text-davinci-003"
 temperature = 1
@@ -37,7 +37,7 @@ Create a Cooking recipe with the available Ingredients using the available Tools
 Explain every step precisly.
 Add Measurements units to the Ingridient list.
 Use both Celcius and Fahrenheit.
-Output only JSON using the following Format: {\"title\": \"title of recipe\",\"ingridients\": [\"ingridient1\", \"ingridient2\"], \"steps\" : [  \"1\": \"step1 description\", \"2\": \"step2 description\"], \"sidenotes\": \"notes\"}
+Output only JSON using the following Format: {\"title\": \"title of recipe\",\"ingridients\": [\"ingridient1\", \"ingridient2\"], \"tools\": [\"tool1\", \"tool2\"] ,\"steps\" : [  \"1\": \"step1 description\", \"2\": \"step2 description\"], \"sidenotes\": \"notes\"}
 """
 
 
@@ -59,12 +59,17 @@ def request_recipe(prompt: str):
         "Authorization": "Bearer " + apiKey,
     }
 
-    response = requests.post(baseUrl, json=data, headers=headers)
+    response = requests.post(baseUrl, json=data, headers=headers, timeout=20)
+    print(response.status_code)
+    if(response.status_code != 200):
+        print("Error: ", response.status_code)
+        return None
+
 
 
     json = response.json() 
 
-
+    print(json)
 
     id = json["id"]
     
