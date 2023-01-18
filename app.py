@@ -1,8 +1,10 @@
 from flask import Flask, request, Response
 from config import api_key
-import requests
+import openai
 
 
+
+openai.api_key = api_key
 app = Flask(__name__)
 
 
@@ -12,28 +14,30 @@ def hello_world():
 
 
 
+@app.route("/recipestream", methods=["POST"], )
+def recipe_stream():
+    request_body:dict = request.get_json()
+    ingredients = request_body.get("ingredients")
+    tools =  request_body.get("tools")
+    servingAmount = request_body.get("servingAmount")
+    targetCalories = request_body.get("targetCalories")
+    prompt = create_prompt(ingredients, tools, servingAmount, targetCalories)
+    result = request_recipe_stream(prompt)
+
+    if(result == None):
+        return Response( "Error Fetching Response", 500,mimetype="application/json")
+
+    return Response(result, mimetype="application/json")
 
 
 @app.route("/recipe", methods=["POST"], )
 def recipe():
     request_body:dict = request.get_json()
-
-
-
     ingredients = request_body.get("ingredients")
     tools =  request_body.get("tools")
     servingAmount = request_body.get("servingAmount")
     targetCalories = request_body.get("targetCalories")
-
-    print(ingredients)
-    print(tools)
-    print(servingAmount)
-    print(targetCalories)
-
     prompt = create_prompt(ingredients, tools, servingAmount, targetCalories)
-
-    print(prompt)
-    
     result = request_recipe(prompt)
 
     if(result == None):
@@ -72,47 +76,30 @@ def create_prompt(ingredients: list, tools: list, servingAmount: int = None, tar
 
     return prompt
 
-def request_recipe(prompt: str):
-
-    data = {
-        "model": model,
-        "temperature": temperature,
-        "max_tokens": max_tokens,
-        "prompt": prompt,
-        "presence_penalty": 0.0, # -2.0 to 2.0
-        "frequency_penalty": 0.0, # -2.0 to 2.0
-        "stream": False,
-    }
-    headers = {
-        "Content-type": "application/json",
-        "Authorization": "Bearer " + api_key,
-    }
-
-    response = requests.post(baseUrl, json=data, headers=headers, timeout=30)
-  
-    json = response.json() 
-
-    if(response.status_code != 200):
-        print("Error: ", response.status_code)
-        print(json["error"])
-        
-        return None
-
-    id = json["id"]
-    choice = json["choices"][0]
+async def request_recipe(prompt: str):
+    response = await openai.Completion.create(engine="text-davinci-003", prompt=prompt, max_tokens=1000, temperature=temperature, frequency_penalty=0.0, presence_penalty=0.0)
+    id = response["id"]
+    choice = response["choices"][0]
     finish_reason = choice["finish_reason"]
     answer: str = choice["text"] 
     jsonStart =answer.find("{")
     answer = answer[jsonStart:]
-
-
-
-
-    print("id: ", id)
-    print("finish_reason: ", finish_reason)
-
     return answer
 
 
 
 
+def request_recipe_stream(prompt: str):
+    answer = ""
+
+    for resp in openai.Completion.create(engine="text-davinci-003", prompt=prompt, max_tokens=1000, temperature=temperature, frequency_penalty=0.0, presence_penalty=0.0, stream=True):
+        
+        data = resp['choices'][0]['text']
+        answer += data
+        print(data)
+     
+        
+
+
+
+    return answer
