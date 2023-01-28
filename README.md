@@ -5,16 +5,18 @@ Rest Api using Flask and OpenAi Api.
 Python3 
 
 git clone 
-
 cd 
-
 python3 -m venv venv
-
 . venv/bin/activate 
 
-pip install Flask 
 
-pip install requests 
+## Dependencies
+Flask
+requests
+
+install with pip install
+
+
 
 To Start: flask --app app run 
 

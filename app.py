@@ -1,6 +1,9 @@
 from flask import Flask, request, Response
 from config import api_key
 import requests
+import db
+
+
 
 
 app = Flask(__name__)
