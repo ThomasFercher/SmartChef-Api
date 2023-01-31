@@ -13,6 +13,7 @@ python3 -m venv venv
 ## Dependencies
 Flask
 requests
+pymongo
 
 install with pip install
 
@@ -25,5 +26,8 @@ To Debug: flask --app app --debug run \n
 # Requests
 
 ## Post /recipe
+
+Start Command: 
+gunicorn --bind 0.0.0.0:8000 --workers 1 wsgi:app  
 
 

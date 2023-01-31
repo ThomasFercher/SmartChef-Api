@@ -2,3 +2,7 @@
 /__pycache__
 /.vscode
 config.py
+nohup.out
+logs.log
+
+/entities/__pycache__
