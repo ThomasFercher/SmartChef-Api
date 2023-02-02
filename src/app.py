@@ -31,15 +31,8 @@ def recipe():
     print(prompt)
     logger.info(prompt)
 
-    result = request_recipe(prompt)
 
-    if result == None:
-        return Response("Error Fetching Response", 500, mimetype="application/json")
-
-    return Response(result, mimetype="application/json")
-
-
-def request_recipe(prompt: str):
+    ### Request Recipte
 
     data = {
         "model": MODEL,
@@ -80,8 +73,16 @@ def request_recipe(prompt: str):
     finish_reason = choice["finish_reason"]
     answer: str = choice["text"]
     jsonStart = answer.find("{")
-    answer = answer[jsonStart:]
+    result  = answer[jsonStart:]
 
     logger.info(f"Returned answer with id={id} duration={time_convert(duration)}")
 
-    return answer
+    if result == None:
+        return Response("Error Fetching Response", 500, mimetype="application/json")
+
+    return Response(result, mimetype="application/json")
+
+
+
+
+
