@@ -16,6 +16,14 @@ def hello_world():
     return "<p>Hello, World!</p>"
 
 
+
+@app.route("/foodlist", methods=["GET"])
+def foodlist():
+
+
+
+    return Response("Hello World", mimetype="application/json")
+
 @app.route(
     "/recipe",
     methods=["POST"],

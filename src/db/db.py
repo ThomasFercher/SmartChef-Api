@@ -1,16 +1,14 @@
-# import pymongo
-# from entities.food import Food
-# from entities.nutrient import Nutrient
-# from entities.food_nutrient_mapping import FoodNutrientMapping
+import pymongo
+from entities.food import Food
+from entities.nutrient import Nutrient
+from entities.food_nutrient_mapping import FoodNutrientMapping
+from env import DATABASE_URL
 
-# myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-
-# db = myclient["smartchef"]
-
-# foodTable = db["food"]
-# nutrientTable = db["nutrient"]
-# food_nutrient_mapping = db["food_nutrient_mapping"]
-
+myclient = pymongo.MongoClient(DATABASE_URL)
+db = myclient["smartchef"]
+foodTable = db["food"]
+nutrientTable = db["nutrient"]
+food_nutrient_mapping = db["food_nutrient_mapping"]
 
 
 
@@ -19,39 +17,37 @@
 
 
 
-# def foodNutrientMappings(): 
-#     result = food_nutrient_mapping.find({})
-#     mappings = []
 
-#     for x in result:
-#         mapping =  FoodNutrientMapping.from_dict(x)
-#         mappings.append(mapping)
+def foodNutrientMappings(): 
+    result = food_nutrient_mapping.find({})
+    mappings = []
 
-#     return mappings
+    for x in result:
+        mapping =  FoodNutrientMapping.from_dict(x)
+        mappings.append(mapping)
 
-# def nutrients(): 
-#     result = nutrientTable.find({})
-#     nutrients = []
+    return mappings
 
-#     for x in result:
-#         nutrient =  Nutrient.from_dict(x)
-#         nutrients.append(nutrient)
+def nutrients(): 
+    result = nutrientTable.find({})
+    nutrients = []
 
-#     return nutrients
+    for x in result:
+        nutrient =  Nutrient.from_dict(x)
+        nutrients.append(nutrient)
 
-
-
-# def foods(): 
-#     result = foodTable.find({})
-#     foods = []
-
-#     for x in result:
-#         food =  Food.from_dict(x)
-#         foods.append(food)
-
-#     return foods
+    return nutrients
 
 
-# print(foods())
-# print(nutrients())
-# print(foodNutrientMappings())
+
+def foods(): 
+    result = foodTable.find({})
+    foods = []
+
+    for x in result:
+        food =  Food.from_dict(x)
+        foods.append(food)
+
+    return foods
+
+
