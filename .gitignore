@@ -1,8 +1,7 @@
 /venv
-/__pycache__
+__pycache__
 /.vscode
 config.py
 nohup.out
 logs.log
 
-/entities/__pycache__
