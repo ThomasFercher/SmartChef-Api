@@ -21,7 +21,7 @@ install with pip install
 
 To Start: flask --app app run 
 
-To Debug: flask --app app --debug run \n
+To Debug: flask --app app --debug run 
 
 # Requests
 

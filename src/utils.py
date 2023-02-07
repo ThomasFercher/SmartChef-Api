@@ -1,4 +1,6 @@
 import logging
+from typing import Callable
+from entities.food import Food
 
 def time_convert(sec):
   mins = sec // 60
@@ -18,3 +20,17 @@ def setup_logger():
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     return logger
+
+
+def where(lst: list, condition: Callable[[Food], bool]) -> list[Food]:
+    return [x for i,x in enumerate(lst) if condition(x)]
+
+
+def food_search(food: Food, query: str) -> bool:
+    name = food.name.lower()
+    query = query.lower()
+
+    return name.__contains__(query)
+   
+
+    

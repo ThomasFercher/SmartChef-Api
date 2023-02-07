@@ -4,11 +4,12 @@ import requests
 from env import BASEURL, MODEL, TEMPERATUR, MAX_TOKENS
 from prompt import create_prompt
 import time
-from utils import setup_logger, time_convert
-
+import utils
+import db
+import json 
 
 app = Flask(__name__)
-logger = setup_logger()
+logger = utils.setup_logger()
 
 
 @app.route("/")
@@ -17,12 +18,44 @@ def hello_world():
 
 
 
-@app.route("/foodlist", methods=["GET"])
-def foodlist():
+@app.route("/ingredients", methods=["GET"])
+def ingredients():
+    foods = db.foods()
+
+    result = []
+
+    for food in foods:
+        result.append(food.__dict__)
+        
+
+    logger.info("Ingredients requested")
+
+    return Response(json.dumps(result), mimetype="application/json")
+
+
+@app.route("/searchIngredients", methods=["GET"])
+def searchIngredients():
+    foods = db.foods()
+
+    query = request.args.get("query")
+
+    foods =  utils.where(foods, lambda food: utils.food_search(food, query))
+
+    result = []
+
+
+    length = foods.__len__()
+
+    logger.info(f"Search Ingredients requested: {query} | {length} results")
 
 
 
-    return Response("Hello World", mimetype="application/json")
+    for food in foods:
+        result.append(food.__dict__)
+
+    return Response(json.dumps(result), mimetype="application/json")
+
+
 
 @app.route(
     "/recipe",
@@ -83,7 +116,7 @@ def recipe():
     jsonStart = answer.find("{")
     result  = answer[jsonStart:]
 
-    logger.info(f"Returned answer with id={id} duration={time_convert(duration)}")
+    logger.info(f"Returned answer with id={id} duration={utils.time_convert(duration)}")
 
     if result == None:
         return Response("Error Fetching Response", 500, mimetype="application/json")
