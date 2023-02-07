@@ -4,7 +4,7 @@ from env import DATABASE_URL
 
 myclient = pymongo.MongoClient(DATABASE_URL)
 db = myclient["smartchef"]
-foodTable = db["food2"]
+foodTable = db["food"]
 
 
 

@@ -28,6 +28,7 @@ To Debug: flask --app app --debug run
 ## Post /recipe
 
 Start Command: 
-gunicorn --bind 0.0.0.0:8000 --workers 1 wsgi:app  
+nohup gunicorn --bind 0.0.0.0:8000 --workers 4 --threads 4 wsgi:app &
 
 
+https://bartsimons.me/gunicorn-as-a-systemd-service/
