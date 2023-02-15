@@ -16,8 +16,21 @@ def foods() -> list[Food]:
         food =  Food.from_dict(x)
         foods.append(food)
 
-
-    
-
     return foods
 
+
+def categories() -> list[str]:
+    result = foodTable.distinct("Category")
+ 
+    return result
+
+  
+def getByCategory(category: str) -> list[Food]:
+    result = foodTable.find({"Category": category})
+    foods = []
+
+    for x in result:
+        food =  Food.from_dict(x)
+        foods.append(food)
+
+    return foods

@@ -16,6 +16,30 @@ logger = utils.setup_logger()
 def hello_world():
     return "<p>Hello, World!</p>"
 
+@app.route("/categories", methods=["GET"])
+def categories():
+    categories = db.categories()
+    print(categories)
+    
+
+    logger.info("Categories requested")
+
+    return Response(json.dumps(categories), mimetype="application/json")
+
+@app.route("/ingredients/category", methods=["GET"])
+def ingredients_category():
+    category = request.args.get("val")
+    
+    result = db.getByCategory(category)
+
+    ingredients = []
+
+    for food in result:
+        ingredients.append(food.__dict__)
+
+    logger.info("Ingredients by category requested")
+
+    return Response(json.dumps(ingredients), mimetype="application/json")
 
 
 @app.route("/ingredients", methods=["GET"])
