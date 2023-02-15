@@ -8,6 +8,13 @@ def try_float(value, default=None):
         return default
 
 
+def try_int(value, default=None):
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
+
 @dataclass
 class Food:
     id: int
@@ -65,12 +72,12 @@ class Food:
         data.pop("_id")
 
         return cls(
-            id=int(data.get("ID", "")),
+            id=try_int(data.get("ID", "")),
             name=data.get("Name", ""),
             category=data.get("Category", ""),
             unit=data.get("Matrix unit", ""),
-            calories=int(data.get("Energy, kilocalories (kcal)", None)),
-            joules=int(data.get("Energy, kilojoules (kJ)", None)),
+            calories=try_int(data.get("Energy, kilocalories (kcal)", None)),
+            joules=try_int(data.get("Energy, kilojoules (kJ)", None)),
             fat=try_float(
                 data.get("Fat, total (g)", None),
             ),

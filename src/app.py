@@ -10,11 +10,13 @@ import json
 
 app = Flask(__name__)
 logger = utils.setup_logger()
+limiter = utils.setup_limiter(app)
 
 
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
+@app.route("/ping")
+@limiter.exempt
+def ping():
+    return "Pong"
 
 @app.route("/categories", methods=["GET"])
 def categories():
@@ -43,6 +45,7 @@ def ingredients_category():
 
 
 @app.route("/ingredients", methods=["GET"])
+@limiter.limit("5 per second")
 def ingredients():
     foods = db.foods()
 
@@ -58,11 +61,12 @@ def ingredients():
 
 
 @app.route("/searchIngredients", methods=["GET"])
+@limiter.limit("5 per second")
 def searchIngredients():
     foods = db.foods()
 
     query = request.args.get("query")
-
+    print(query)
     foods =  utils.where(foods, lambda food: utils.food_search(food, query))
 
     result = []
@@ -85,6 +89,7 @@ def searchIngredients():
     "/recipe",
     methods=["POST"],
 )
+@limiter.limit("5 per minute")
 def recipe():
     request_body: dict = request.get_json()
     ingredients = request_body.get("ingredients")
