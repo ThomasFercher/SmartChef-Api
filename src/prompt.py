@@ -1,4 +1,5 @@
 from config import TEMPLATE_PROMPT1,TEMPLATE_PROMPT2
+import re
 
 def create_prompt( 
     ingredients: list,
@@ -17,59 +18,76 @@ def create_prompt(
     return prompt
 
 
-def decode_response_prompt(returned_prompt: str) -> dict:
+def decode_response_prompt(returned_prompt: str, servingAmount:str) -> dict:
+    s1 = r";(?=[^\[\]]*(?:\[|$))"
+    s2 = ";"
+    s3 = ":"
 
-    s1 = "" #"\u30"
-    s2 ="" #"\u31"
-   # s3 = "\u27"
+    
 
     print(returned_prompt)
     
     returned_prompt = returned_prompt.replace("\n", "")
-    fields = returned_prompt.split(s1)
+
+    fields = re.split(s1, returned_prompt)
+
+    ## print each field
+    for field in fields:
+        print(field)
 
     print(fields.__len__())
 
     name = fields[0]
     length_s = fields[1]
-    servingAmount_s = fields[2]
     ingredients = fields[3]
-    tools = fields[4]
-    steps = fields[5]
-    tips = fields[6]
+    tools = fields[2]
+    steps = fields[4]
+    tips = fields[5]
 
-   # print(name)
-   # print(length_s)
-   # print(servingAmount_s)
-    print(ingredients)
-    #print(tools)
-    #print(steps)
-    #print(tips)
-
+    ### Name
     name = name.replace("\"", "")
+
+    ### Length
     length = int(length_s)
-    servingAmount = int(servingAmount_s)
 
+    ### Ingredients
+    print(ingredients)
     ingredients = ingredients.replace("[", "").replace("]", "").replace("{", "").replace("}", "")
-
     print(ingredients)
-    ingredients = ingredients.split(";")
-
+    ingredients = ingredients.split(s2)
+    print("ingredients")
     print(ingredients)
-
-
-    json_ingredients = []
-
+    dict_ingredients = []
     for ingredient in ingredients:
-        ingredient = ingredient.split(s2)
-        name = ingredient[0]
+        ingredient = ingredient.split(s3)
+        ingredient_name = ingredient[0]
         amount = ingredient[1]
-        json_ingredients.append({"name": name, "amount": amount})
+        dict_ingredients.append({"name": ingredient_name, "amount": amount})
 
+    ### Tools
+    tools = tools.replace("[", "").replace("]", "").split(";")
 
-    print(json_ingredients)
+    ### Steps
+    steps = steps.replace("[", "").replace("]", "").split(";")
+    list_steps = []
+    for step in steps:
+        step = step.split(":")
+        list_steps.append(step[1])
+     
 
+    ### Tips
+    tips = tips.replace("[", "").replace("]", "").split(";")
+    list_tips = []
+    for tip in tips:
+        tip = tip.split(":")
+        list_tips.append(tip[1])
 
-    #print(name)
-
-    pass
+    return {
+        "name": name,
+        "length": length,
+        "servingAmount": servingAmount,
+        "ingredients": dict_ingredients,
+        "tools": tools,
+        "steps": list_steps,
+        "tips": list_tips,
+    }

@@ -130,34 +130,38 @@ def recipe():
         logger.error(e)
         return Response("Error", 500, mimetype="application/json")
 
-    json = response.json()
+    json_response = response.json()
 
     if response.status_code != 200:
         print("Error: ", response.status_code)
-        print(json["error"])
+        print(json_response["error"])
 
         return None
 
     end = time.time()
     duration = end - start
 
-    id = json["id"]
-    choice = json["choices"][0]
+    id = json_response["id"]
+    choice = json_response["choices"][0]
     finish_reason = choice["finish_reason"]
     answer: str = choice["text"]
     jsonStart = answer.find("{")
 
     ### Json Parsing
-    result  = decode_response_prompt(answer)
+    result  = decode_response_prompt(answer, servingAmount)
+
+    print(result)
+
+    json_response = json.dumps(result)
 
     ### Return
 
     logger.info(f"Returned answer with id={id} duration={utils.time_convert(duration)}")
 
-    if result == None:
+    if json_response == None:
         return Response("Error Fetching Response", 500, mimetype="application/json")
 
-    return Response(result, mimetype="application/json")
+    return Response(json_response, mimetype="application/json")
 
 
 
