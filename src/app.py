@@ -2,7 +2,7 @@ from flask import Flask, request, Response
 from config import api_key
 import requests
 from env import BASEURL, MODEL, TEMPERATUR, MAX_TOKENS
-from prompt import create_prompt
+from prompt import create_prompt, decode_response_prompt
 import time
 import utils
 import db
@@ -12,6 +12,7 @@ app = Flask(__name__)
 logger = utils.setup_logger()
 limiter = utils.setup_limiter(app)
 utils.setup_cors(app)
+
 
 @app.route("/ping")
 @limiter.exempt
@@ -109,8 +110,8 @@ def recipe():
         "temperature": TEMPERATUR,
         "max_tokens": MAX_TOKENS,
         "prompt": prompt,
-        "presence_penalty": 0.0,  # -2.0 to 2.0
-        "frequency_penalty": 0.0,  # -2.0 to 2.0
+        "presence_penalty": 0,  # -2.0 to 2.0
+        "frequency_penalty":0,  # -2.0 to 2.0
         "stream": False,
     }
     headers = {
@@ -124,33 +125,43 @@ def recipe():
         response = requests.post(BASEURL, json=data, headers=headers, timeout=45)
     except requests.exceptions.ReadTimeout:
         logger.error("ReadTimeoutError")
+        return Response("ReadTimeoutError", 500, mimetype="application/json")
     except Exception as e:
         logger.error(e)
+        return Response("Error", 500, mimetype="application/json")
 
-    json = response.json()
+    json_response = response.json()
 
     if response.status_code != 200:
         print("Error: ", response.status_code)
-        print(json["error"])
+        print(json_response["error"])
 
         return None
 
     end = time.time()
     duration = end - start
 
-    id = json["id"]
-    choice = json["choices"][0]
+    id = json_response["id"]
+    choice = json_response["choices"][0]
     finish_reason = choice["finish_reason"]
     answer: str = choice["text"]
     jsonStart = answer.find("{")
-    result  = answer[jsonStart:]
+
+    ### Json Parsing
+    result  = decode_response_prompt(answer, servingAmount)
+
+    print(result)
+
+    json_response = json.dumps(result)
+
+    ### Return
 
     logger.info(f"Returned answer with id={id} duration={utils.time_convert(duration)}")
 
-    if result == None:
+    if json_response == None:
         return Response("Error Fetching Response", 500, mimetype="application/json")
 
-    return Response(result, mimetype="application/json")
+    return Response(json_response, mimetype="application/json")
 
 
 
