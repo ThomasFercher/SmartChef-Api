@@ -66,13 +66,16 @@ def decode_response_prompt(returned_prompt: str, servingAmount:str) -> dict:
 
     ### Tools
     tools = tools.replace("[", "").replace("]", "").split(";")
+    list_tools = []
+    for tool in tools:
+        list_tools.append(tool.strip())
 
     ### Steps
     steps = steps.replace("[", "").replace("]", "").split(";")
     list_steps = []
     for step in steps:
         step = step.split(":")
-        list_steps.append(step[1])
+        list_steps.append(step[1].strip())
      
 
     ### Tips
@@ -80,14 +83,14 @@ def decode_response_prompt(returned_prompt: str, servingAmount:str) -> dict:
     list_tips = []
     for tip in tips:
         tip = tip.split(":")
-        list_tips.append(tip[1])
+        list_tips.append(tip[1].strip())
 
     return {
         "name": name,
         "length": length,
         "servingAmount": servingAmount,
         "ingredients": dict_ingredients,
-        "tools": tools,
+        "tools": list_tools,
         "steps": list_steps,
         "tips": list_tips,
     }
