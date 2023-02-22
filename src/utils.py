@@ -3,7 +3,10 @@ from typing import Callable
 from entities.food import Food
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_cors import CORS
 
+def setup_cors(app):
+    CORS(app)
 
 def time_convert(sec):
     mins = sec // 60

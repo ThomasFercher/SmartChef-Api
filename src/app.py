@@ -11,7 +11,7 @@ import json
 app = Flask(__name__)
 logger = utils.setup_logger()
 limiter = utils.setup_limiter(app)
-
+utils.setup_cors(app)
 
 @app.route("/ping")
 @limiter.exempt
