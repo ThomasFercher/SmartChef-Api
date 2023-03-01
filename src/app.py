@@ -90,7 +90,7 @@ def searchIngredients():
     "/recipe",
     methods=["POST"],
 )
-@limiter.limit("5 per minute")
+@limiter.limit("10 per minute")
 def recipe():
     request_body: dict = request.get_json()
     ingredients = request_body.get("ingredients")
@@ -99,7 +99,6 @@ def recipe():
     targetCalories = request_body.get("targetCalories")
     prompt = create_prompt(ingredients, tools, servingAmount, targetCalories)
 
-    print(prompt)
     logger.info(prompt)
 
 
@@ -133,9 +132,7 @@ def recipe():
     json_response = response.json()
 
     if response.status_code != 200:
-        print("Error: ", response.status_code)
-        print(json_response["error"])
-
+        logger.error(f"Error: {response.status_code} {json_response['error']}")
         return None
 
     end = time.time()
@@ -148,15 +145,17 @@ def recipe():
     jsonStart = answer.find("{")
 
     ### Json Parsing
-    result  = decode_response_prompt(answer, servingAmount)
+    result  = decode_response_prompt(answer, servingAmount, logger)
 
-    print(result)
+    if result == None:
+        return Response("Error Fetching Response", 500, mimetype="application/json")
 
     json_response = json.dumps(result)
 
     ### Return
 
     logger.info(f"Returned answer with id={id} duration={utils.time_convert(duration)}")
+    logger.info(f"Result: {result}")
 
     if json_response == None:
         return Response("Error Fetching Response", 500, mimetype="application/json")
