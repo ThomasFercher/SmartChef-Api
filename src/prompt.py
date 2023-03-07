@@ -1,22 +1,23 @@
 from logging import Logger
-from config import TEMPLATE_PROMPT1,TEMPLATE_PROMPT2
+from config import TEMPLATE_PROMPT1,TEMPLATE_PROMPT2, TEMPLATE_PROMPT3
 import re
 import traceback
+from entities.prompt import Difficulty
+
 
 def create_prompt( 
     ingredients: list,
     tools: list,
-    servingAmount: int = None,
-    targetCalories: int = None,
+    servingAmount: int,
+    difficulty: Difficulty,
 ):
-    prompt = f"{TEMPLATE_PROMPT1}\nInputIngredients: {', '.join(ingredients)}\nInputTools:{', '.join(tools)}"
-    if servingAmount != None:
-        prompt += f" \nServingAmount: {servingAmount}"
-    # if(targetCalories != None):
-    #    prompt += f" \Calories: {targetCalories}"
+    prompt1 = f"{TEMPLATE_PROMPT1}{difficulty.value}.\n"
+    inputIngredients = f"InputIngredients: {', '.join(ingredients)}\n"
+    inputTools = f"InputTools: {', '.join(tools)}\n"
+    inputServingAmount = f"ServingAmount: {servingAmount}\n\n"
 
-    prompt +=f"\n{TEMPLATE_PROMPT2}" 
-
+    prompt = f"{prompt1}{TEMPLATE_PROMPT2}\n\n{inputIngredients}{inputTools}{inputServingAmount}{TEMPLATE_PROMPT3}"
+ 
     return prompt
 
 
@@ -24,13 +25,39 @@ def decode_response_prompt(returned_prompt: str, servingAmount:str, logger:Logge
     s1 = r";(?=[^\[\]]*(?:\[|$))"
     s2 = ";"
     s3 = ":"
+    s4 = "."
+    s5 = "\n"
+
+    def splitString(list: str): 
+        splitList = list.split(s2)
+        if splitList.__len__()> 1:
+            print("split by ,")
+            return splitList
+        
+        splitList = list.split(s4)
+        if splitList.__len__()> 1:
+            print("split by .")
+            return splitList
+        
+        splitList = list.split(s5)
+        if splitList.__len__()> 1:
+            print("split by \\n")
+            return splitList
+        
+        return splitList
+  
+
 
     try :
         logger.info(f"Decoding response: {returned_prompt}")
         returned_prompt = returned_prompt.replace("\n", "")
 
         fields = re.split(s1, returned_prompt)
+      
+        if fields[-1] == "":
+            fields.pop()
 
+        logger.info(f"Decoding response: {fields} length: {fields.__len__()}")
         if fields.__len__() == 6:
             name = fields[0]
             length_s = fields[1]
@@ -38,7 +65,7 @@ def decode_response_prompt(returned_prompt: str, servingAmount:str, logger:Logge
             tools = fields[2]
             steps = fields[4]
             tips = fields[5]
-        if fields.__len__() == 5:
+        elif fields.__len__() == 5:
             firstSplit = fields[0].split(s3)
             name = firstSplit[0]
             length_s = firstSplit[1]
@@ -46,49 +73,80 @@ def decode_response_prompt(returned_prompt: str, servingAmount:str, logger:Logge
             tools = fields[1]
             steps = fields[3]
             tips = fields[4]
+        else:
+            logger.info(f"Field Decoding Failed response: {fields}, length: {fields.__len__()}")
+            return {
+                "invalid": True,
+            }
+
+
+        # remove \" 
+
+        if not length_s.isnumeric(): 
+            print("not numeric")
+            length_s = re.sub('[^0-9]','', length_s)
         
+
+       
 
         logger.info(f"Decoding response: {name} | {length_s} | {ingredients} | {tools} | {steps} | {tips}")
 
         ### Name
-        name = name.replace("\"", "")
+        name = name.replace("\"", "").strip()
 
         ### Length
         length = int(length_s)
 
         ### Ingredients
         ingredients = ingredients.replace("[", "").replace("]", "").replace("{", "").replace("}", "")
-        ingredients = ingredients.split(s2)
+        ingredients = splitString(ingredients)
         dict_ingredients = []
         for ingredient in ingredients:
-            ingredient = ingredient.split(s3)
-            ingredient_name = ingredient[0]
-            amount = ingredient[1]
+            ingredient_s = ingredient.split(s3)
+            if ingredient_s.__len__() == 1:
+                print(", used as separator")
+                ingredient_s = ingredient.split(",")
+            ingredient_name = ingredient_s[0].strip()
+
+            amount = ""
+            if ingredient_s.__len__() > 1:
+                amount = ingredient_s[1].strip()
+        
             dict_ingredients.append({"name": ingredient_name, "amount": amount})
 
         ### Tools
-        tools = tools.replace("[", "").replace("]", "").split(";")
+        tools = tools.replace("[", "").replace("]", "")
+        tools_s = splitString(tools)
         list_tools = []
-        for tool in tools:
+        for tool in tools_s:
             list_tools.append(tool.strip())
 
         ### Steps
-        steps = steps.replace("[", "").replace("]", "").split(";")
+        steps = steps.replace("[", "").replace("]", "")
+        steps_s = splitString(steps)
         list_steps = []
-        for step in steps:
-            step = step.split(":")
+        for step in steps_s:
+            step = step.split(s3)
             if(len(step) == 2):
                 list_steps.append(step[1].strip())
         
-        
-
         ### Tips
-        tips = tips.replace("[", "").replace("]", "").split(";")
+        tips = tips.replace("[", "").replace("]", "")
+        tips_s = splitString(tips)
         list_tips = []
-        for tip in tips:
-            tip = tip.split(":")
+        for tip in tips_s:
+            tip = tip.split(s3)
             if(len(tip) == 2):
                 list_tips.append(tip[1].strip())
+
+
+        if list_steps.__len__() == 0:
+            logger.info("No steps found in response {returned_prompt}}")
+            return {
+                "invalid": True,
+            }
+    
+
 
         return {
             "name": name,
@@ -109,4 +167,3 @@ def decode_response_prompt(returned_prompt: str, servingAmount:str, logger:Logge
 
     
 
-    

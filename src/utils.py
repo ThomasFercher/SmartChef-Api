@@ -45,3 +45,5 @@ def food_search(food: Food, query: str) -> bool:
     query = query.lower()
 
     return name.__contains__(query)
+
+

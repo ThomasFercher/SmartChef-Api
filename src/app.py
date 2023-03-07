@@ -1,12 +1,14 @@
 from flask import Flask, request, Response
-from config import api_key
+from config import api_key, api_key_release
 import requests
 from env import BASEURL, MODEL, TEMPERATUR, MAX_TOKENS
 from prompt import create_prompt, decode_response_prompt
 import time
 import utils
 import db
-import json 
+import json
+from entities.prompt import Difficulty
+import signal 
 
 app = Flask(__name__)
 logger = utils.setup_logger()
@@ -19,20 +21,21 @@ utils.setup_cors(app)
 def ping():
     return "Pong"
 
+
 @app.route("/categories", methods=["GET"])
 def categories():
     categories = db.categories()
     print(categories)
-    
 
     logger.info("Categories requested")
 
     return Response(json.dumps(categories), mimetype="application/json")
 
+
 @app.route("/ingredients/category", methods=["GET"])
 def ingredients_category():
     category = request.args.get("val")
-    
+
     result = db.getByCategory(category)
 
     ingredients = []
@@ -54,7 +57,6 @@ def ingredients():
 
     for food in foods:
         result.append(food.__dict__)
-        
 
     logger.info("Ingredients requested")
 
@@ -68,22 +70,18 @@ def searchIngredients():
 
     query = request.args.get("query")
     print(query)
-    foods =  utils.where(foods, lambda food: utils.food_search(food, query))
+    foods = utils.where(foods, lambda food: utils.food_search(food, query))
 
     result = []
-
 
     length = foods.__len__()
 
     logger.info(f"Search Ingredients requested: {query} | {length} results")
 
-
-
     for food in foods:
         result.append(food.__dict__)
 
     return Response(json.dumps(result), mimetype="application/json")
-
 
 
 @app.route(
@@ -96,21 +94,22 @@ def recipe():
     ingredients = request_body.get("ingredients")
     tools = request_body.get("tools")
     servingAmount = request_body.get("servingAmount")
-    targetCalories = request_body.get("targetCalories")
-    prompt = create_prompt(ingredients, tools, servingAmount, targetCalories)
+    if servingAmount == None:
+        servingAmount = 1
+
+    difficulty = Difficulty.from_json(request_body.get("difficulty"))
+
+    prompt = create_prompt(ingredients, tools, servingAmount, difficulty)
 
     logger.info(prompt)
-
-
-    ### Request Recipte
 
     data = {
         "model": MODEL,
         "temperature": TEMPERATUR,
         "max_tokens": MAX_TOKENS,
         "prompt": prompt,
-        "presence_penalty": 0,  # -2.0 to 2.0
-        "frequency_penalty":0,  # -2.0 to 2.0
+        "presence_penalty": 0,
+        "frequency_penalty": 0,
         "stream": False,
     }
     headers = {
@@ -119,33 +118,38 @@ def recipe():
     }
 
     start = time.time()
+    end = start + 30
+    
 
-    try:
-        response = requests.post(BASEURL, json=data, headers=headers, timeout=45)
-    except requests.exceptions.ReadTimeout:
-        logger.error("ReadTimeoutError")
-        return Response("ReadTimeoutError", 500, mimetype="application/json")
-    except Exception as e:
-        logger.error(e)
-        return Response("Error", 500, mimetype="application/json")
+    while True:
+        try:
+            logger.info("Requesting OpenAI")
+            response = requests.post(BASEURL, json=data, headers=headers, timeout=30)
+            if response.status_code != 200:
+                raise Exception(
+                    f"OpenAI returned status code {response.status_code} with message {response.text}"
+                )
+            break
+        except Exception as e:
+            logger.error(e)
+            if time.time() >= end:
+                return Response(
+                    json.dumps({"invalid": True}),
+                    500,
+                    mimetype="application/json",
+                )
+            
 
     json_response = response.json()
-
-    if response.status_code != 200:
-        logger.error(f"Error: {response.status_code} {json_response['error']}")
-        return None
-
     end = time.time()
     duration = end - start
 
     id = json_response["id"]
     choice = json_response["choices"][0]
-    finish_reason = choice["finish_reason"]
     answer: str = choice["text"]
-    jsonStart = answer.find("{")
 
     ### Json Parsing
-    result  = decode_response_prompt(answer, servingAmount, logger)
+    result = decode_response_prompt(answer, servingAmount, logger)
 
     if result == None:
         return Response("Error Fetching Response", 500, mimetype="application/json")
@@ -161,8 +165,3 @@ def recipe():
         return Response("Error Fetching Response", 500, mimetype="application/json")
 
     return Response(json_response, mimetype="application/json")
-
-
-
-
-
