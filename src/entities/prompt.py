@@ -23,3 +23,20 @@ class Difficulty(Enum):
 
 
 
+class IngredientSelection(Enum):
+    RANDOM = "Random"
+    STRICT = "Strict"
+    STRICT_GEN = "StrictGen"
+    SEL_GEN = "Selected"
+
+    @classmethod
+    def from_json(cls, json):
+        if json == None:
+            return IngredientSelection.SEL_GEN
+        if json == "Strict":
+            return IngredientSelection.STRICT
+        if json == "StrictGen":
+            return IngredientSelection.STRICT_GEN
+        if json == "Random":
+            return IngredientSelection.RANDOM
+        return IngredientSelection.SEL_GEN

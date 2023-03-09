@@ -7,7 +7,7 @@ import time
 import utils
 import db
 import json
-from entities.prompt import Difficulty
+from entities.prompt import Difficulty, IngredientSelection
 import signal 
 
 app = Flask(__name__)
@@ -98,8 +98,11 @@ def recipe():
         servingAmount = 1
 
     difficulty = Difficulty.from_json(request_body.get("difficulty"))
+    selection = IngredientSelection.from_json(request_body.get("selection"))
+    if selection is IngredientSelection.RANDOM:
+        ingredients = []
 
-    prompt = create_prompt(ingredients, tools, servingAmount, difficulty)
+    prompt = create_prompt(ingredients, tools, servingAmount, difficulty, selection)
 
     logger.info(prompt)
 

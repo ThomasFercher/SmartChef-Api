@@ -1,8 +1,8 @@
 from logging import Logger
-from config import TEMPLATE_PROMPT1,TEMPLATE_PROMPT2, TEMPLATE_PROMPT3
+from config import PROMPSTART, RULES, UNITS, Format, FormatExample, PROMPTEND
 import re
 import traceback
-from entities.prompt import Difficulty
+from entities.prompt import Difficulty, IngredientSelection
 
 
 def create_prompt( 
@@ -10,18 +10,66 @@ def create_prompt(
     tools: list,
     servingAmount: int,
     difficulty: Difficulty,
+    ingrSel: IngredientSelection
 ):
-    prompt1 = f"{TEMPLATE_PROMPT1}{difficulty.value}.\n"
-    inputIngredients = f"InputIngredients: {', '.join(ingredients)}\n"
+    prompt1 = f"{PROMPSTART}{difficulty.value}."
+    inputIngredients = f"InputIngredients: {'; '.join(ingredients)}"
     inputTools = f"InputTools: {', '.join(tools)}\n"
-    inputServingAmount = f"ServingAmount: {servingAmount}\n\n"
+    inputServingAmount = f"ServingAmount: {servingAmount}"
 
-    prompt = f"{prompt1}{TEMPLATE_PROMPT2}\n\n{inputIngredients}{inputTools}{inputServingAmount}{TEMPLATE_PROMPT3}"
+    ingredientSelection = getIngredientSelection(ingrSel, ingredients)
+    print(ingredientSelection)
+
+    prompt = f"{prompt1}\n{ingredientSelection}{RULES}\n{UNITS}\n{Format}\n{FormatExample}\n\n{inputIngredients}\n{inputTools}\n{inputServingAmount}\n\n{PROMPTEND}"
  
     return prompt
 
 
+def getIngredientSelection(type: IngredientSelection, ingredients: list):
+    start = "Ingredients Selection: "
+    end = "Never use InputIngredients which dont fit the recipe. Only use the Selected Ingredients\n"
+
+    genIsMin = True
+    maxInput = 2
+    additional = 0
+
+    def getMinOrMax():
+        if genIsMin:
+            return "minimum"
+        else:
+            return "maximum"
+
+    # switch case:
+    if type == IngredientSelection.RANDOM:
+        return f"{start}{end}"
+    
+    if type == IngredientSelection.STRICT:
+        maxInput = ingredients.__len__()
+        additional = 0
+        genIsMin = False
+        return f"{start}Never use more than {maxInput} of InputIngredients. {end}"
+
+    if type == IngredientSelection.STRICT_GEN:
+        maxInput = ingredients.__len__()
+        additional = 8
+        genIsMin = True
+
+    if type == IngredientSelection.SEL_GEN:
+        maxInput = 2
+        additional = 8
+        genIsMin = True
+   
+    return f"{start}Never use more than {maxInput} of the InputIngredients. Always generate a {getMinOrMax()} of {additional} additional Ingredients. {end}"
+
+
+
+
 def decode_response_prompt(returned_prompt: str, servingAmount:str, logger:Logger) -> dict:
+    if not returned_prompt.endswith("]"):
+        print("not endswith ]")
+        returned_prompt = returned_prompt + "]"
+
+
     s1 = r";(?=[^\[\]]*(?:\[|$))"
     s2 = ";"
     s3 = ":"
