@@ -10,24 +10,26 @@ def create_prompt(
     tools: list,
     servingAmount: int,
     difficulty: Difficulty,
-    ingrSel: IngredientSelection
+    ingrSel: IngredientSelection,
+    kitchen: str
 ):
-    prompt1 = f"{PROMPSTART}{difficulty.value}."
+    inputDifficulty = f"Difficulty: {difficulty.value}"
     inputIngredients = f"InputIngredients: {'; '.join(ingredients)}"
     inputTools = f"InputTools: {', '.join(tools)}\n"
     inputServingAmount = f"ServingAmount: {servingAmount}"
+    inputKitchen = f"Kitchen: {kitchen}"
 
     ingredientSelection = getIngredientSelection(ingrSel, ingredients)
     print(ingredientSelection)
 
-    prompt = f"{prompt1}\n{ingredientSelection}{RULES}\n{UNITS}\n{Format}\n{FormatExample}\n\n{inputIngredients}\n{inputTools}\n{inputServingAmount}\n\n{PROMPTEND}"
+    prompt = f"{PROMPSTART}\n{ingredientSelection}{RULES}\n{UNITS}\n{Format}\n{FormatExample}\n\n{inputIngredients}\n{inputTools}\n{inputServingAmount}\n{inputDifficulty}\n{inputKitchen}\n\n{PROMPTEND}"
  
     return prompt
 
 
 def getIngredientSelection(type: IngredientSelection, ingredients: list):
     start = "Ingredients Selection: "
-    end = "Never use InputIngredients which dont fit the recipe. Only use the Selected Ingredients\n"
+    end = "Never use InputIngredients which dont fit the recipe. Only use the Selected Ingredients.\n"
 
     genIsMin = True
     maxInput = 2
@@ -79,7 +81,6 @@ def decode_response_prompt(returned_prompt: str, servingAmount:str, logger:Logge
     def splitString(list: str): 
         splitList = list.split(s2)
         if splitList.__len__()> 1:
-            print("split by ,")
             return splitList
         
         splitList = list.split(s4)
@@ -115,12 +116,21 @@ def decode_response_prompt(returned_prompt: str, servingAmount:str, logger:Logge
             tips = fields[5]
         elif fields.__len__() == 5:
             firstSplit = fields[0].split(s3)
-            name = firstSplit[0]
-            length_s = firstSplit[1]
-            ingredients = fields[2]
-            tools = fields[1]
-            steps = fields[3]
-            tips = fields[4]
+            if firstSplit.__len__() > 1:
+                firstSplit = fields[0].split(",")
+                name = firstSplit[0]
+                length_s = firstSplit[1]
+                ingredients = fields[2]
+                tools = fields[1]
+                steps = fields[3]
+                tips = fields[4]
+            else:
+                name = fields[0]
+                length_s = fields[1]
+                ingredients = fields[2]
+                tools = fields[3]
+                steps = fields[4]
+                tips = "[]"
         else:
             logger.info(f"Field Decoding Failed response: {fields}, length: {fields.__len__()}")
             return {

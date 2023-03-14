@@ -1,10 +1,8 @@
-
 from enum import Enum
-
 class Difficulty(Enum):
-    EASY = "Beginners"
-    MEDIUM = "Intermediates"
-    HARD = "Experts"
+    EASY = "Beginner"
+    MEDIUM = "Intermediate"
+    HARD = "Expert"
 
     @classmethod
     def from_json(cls, json):
@@ -16,13 +14,7 @@ class Difficulty(Enum):
             return Difficulty.MEDIUM
         if json == "Hard":
             return Difficulty.HARD
-        return Difficulty.HARD
-        
-        
-
-
-
-
+        return Difficulty.HARD  
 class IngredientSelection(Enum):
     RANDOM = "Random"
     STRICT = "Strict"

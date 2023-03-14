@@ -91,21 +91,30 @@ def searchIngredients():
 @limiter.limit("10 per minute")
 def recipe():
     request_body: dict = request.get_json()
+    # Ingredients
     ingredients = request_body.get("ingredients")
+    # Tools
     tools = request_body.get("tools")
+    # Serving amount
     servingAmount = request_body.get("servingAmount")
     if servingAmount == None:
         servingAmount = 1
-
+    # Difficulty
     difficulty = Difficulty.from_json(request_body.get("difficulty"))
+    # Selection
     selection = IngredientSelection.from_json(request_body.get("selection"))
     if selection is IngredientSelection.RANDOM:
         ingredients = []
+    
+    # Kitchen
+    kitchen = request_body.get("kitchen")
+    if kitchen == None:
+        kitchen = ""
 
-    prompt = create_prompt(ingredients, tools, servingAmount, difficulty, selection)
 
+
+    prompt = create_prompt(ingredients, tools, servingAmount, difficulty, selection, kitchen)
     logger.info(prompt)
-
     data = {
         "model": MODEL,
         "temperature": TEMPERATUR,
