@@ -8,18 +8,19 @@ Rest Api using Flask and OpenAi Api.
 
 `POST /recipe`
 
-> ## Difficulty: 
+> ### Difficulty
 > - Easy
 > - Medium
 > - Hard
 
-> ## Selection:
+> ### Selection
 > - Random: Random Ingredients are selected. The List of ingredients is ignored.
 > - Strict: Only the given ingredients are used.
 > - StrictGen: All the given ingredients are used and a few ingredients are generated.
 > - Selected: Fitting Ingredients are selected and others are generated.
 
-> ## Kitchen:
+> ### Kitchen
+> `optional` \
 > The type of kitchen the recipe should originate from. \
 > Examples:
 > - Japanese
