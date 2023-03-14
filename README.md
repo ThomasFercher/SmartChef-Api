@@ -99,4 +99,10 @@ Rest Api using Flask and OpenAi Api.
 # Debug
 To Start: flask --app app run 
 To Debug: flask --app app --debug run 
-nohup gunicorn --bind 0.0.0.0:8000 --workers 4 --threads 4 wsgi:app &
+
+# Requests
+
+## Post /recipe
+
+Start Command: 
+nohup gunicorn --bind 0.0.0.0:8000 --workers 5 --threads 4 wsgi:app &

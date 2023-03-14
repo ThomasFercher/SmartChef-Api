@@ -1,5 +1,5 @@
 from flask import Flask, request, Response
-from config import api_key, api_key_release
+from config import api_key
 import requests
 from env import BASEURL, MODEL, TEMPERATUR, MAX_TOKENS
 from prompt import create_prompt, decode_response_prompt
