@@ -40,11 +40,15 @@ def signup():
     request_body: dict = request.get_json()
 
     email = request_body.get("email")
+
+    if db.findUser(email) != None:
+        return Response(json.dumps({"msg":"User already exists"}), 400,mimetype="application/json")
+
     password = request_body.get("password")
     hashed_password = utils.encrypt_password(password)
 
     statusString = db.createUser(email, hashed_password)
-    dict = {"message": statusString}
+    dict = {"msg": statusString}
 
     return Response(json.dumps(dict), status=200, mimetype="application/json")
 
