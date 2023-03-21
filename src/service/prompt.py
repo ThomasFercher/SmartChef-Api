@@ -1,5 +1,5 @@
 from logging import Logger
-from config import PROMPSTART, RULES, UNITS, Format, FormatExample, PROMPTEND
+from config.config import PROMPSTART, RULES, UNITS, Format, FormatExample, PROMPTEND
 import re
 import traceback
 from entities.prompt import Difficulty, IngredientSelection
