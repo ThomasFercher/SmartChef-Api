@@ -2,6 +2,7 @@ import pymongo
 from entities.food import Food
 from entities.user import User
 from config.env import DATABASE_URL
+from bson import ObjectId
 
 
 myclient = pymongo.MongoClient(DATABASE_URL)
@@ -47,6 +48,14 @@ def findUser(email: str) -> User:
 
     return User.from_dict(result)
 
+def findUserById(id: str) -> User:
+    result = usersTable.find_one({"_id": ObjectId(id)})
+
+    if result is None:
+        return None
+
+    return User.from_dict(result)
+
 
 
 
@@ -62,3 +71,9 @@ def createUser(email: str, password: str) -> str:
         return "Failed to create user"
     
     return "User created successfully"
+
+def deleteUser(id: str) -> bool:
+    result = usersTable.delete_one({"_id": ObjectId(id)})
+    if result is None:
+        return False
+    return True

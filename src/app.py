@@ -32,18 +32,15 @@ def ping():
     return "Pong"
 
 
-@app.route("/test", methods=["Get"])
+@app.route("/testAuth", methods=["Get"])
 @jwt_required()
 def test():
     return jsonify({"message": "test"}), 200
     
 
 @jwt.token_in_blocklist_loader
-def check_if_token_in_blacklist(dict,decrypted_token):
-    print("check_if_token_in_blacklist")
-    print(blacklist)
+def check_if_token_in_blacklist(_,decrypted_token):
     jti = decrypted_token['jti']
-    print(jti)
     return jti in blacklist
 
 

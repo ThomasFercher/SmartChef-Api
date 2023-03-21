@@ -23,9 +23,9 @@ class User:
     def to_json(self, include_id=True):
         if include_id:
             return {
-                "_id": ObjectId(self.id),
+                "id": self.id,
                 "email": self.email,
-                "password": self.password,
+              
                 "isAdmin": self.isAdmin,
                 "isVerified": self.isVerified,
             }
