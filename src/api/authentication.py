@@ -14,6 +14,11 @@ from app import blacklist
 
 auth_bp = Blueprint("auth_bp", __name__, url_prefix="/auth")
 
+@auth_bp.route("/test", methods=["Get"])
+@jwt_required()
+def test():
+    return jsonify({"message": "test"}), 200
+    
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
@@ -76,9 +81,6 @@ def delete():
         return Response(json.dumps({"msg": "Error deleting Acount"}), 500, mimetype="application/json")
     
     return Response(json.dumps({"msg": "Successfully deleted Acount"}), 200, mimetype="application/json")
-
-
-
 
 
 # getUser

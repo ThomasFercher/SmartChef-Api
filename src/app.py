@@ -31,13 +31,7 @@ app.register_blueprint(auth_bp)
 def ping():
     return "Pong"
 
-
-@app.route("/testAuth", methods=["Get"])
-@jwt_required()
-def test():
-    return jsonify({"message": "test"}), 200
-    
-
+  
 @jwt.token_in_blocklist_loader
 def check_if_token_in_blacklist(_,decrypted_token):
     jti = decrypted_token['jti']

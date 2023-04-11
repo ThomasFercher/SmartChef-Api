@@ -22,7 +22,7 @@ recipe_bp = Blueprint("recipe_bp", __name__)
     methods=["POST"],
 )
 @limiter.limit("10 per minute")
-@jwt_required()
+#@jwt_required() Will be added when the iOS App implements Authentication
 def recipe():
     request_body: dict = request.get_json()
     # Ingredients
